@@ -1,6 +1,10 @@
 import { ChangeEvent, useCallback, useState } from "react"
 
-export default function SaisieAdresse(){
+interface SaisieAdresseProps {
+    fnUp: (add:string) => void;
+}
+
+export default function SaisieAdresse({fnUp}: SaisieAdresseProps){
     const [saisie, setSaisie] = useState('')
     const [addresses, setAddresses] = useState<string[]>([]);
     async function fetchData(address:string) {
@@ -25,22 +29,25 @@ export default function SaisieAdresse(){
 
       const handleSaisie = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
-        setSaisie(value);
+        fnUp(value);
         if (value.length > 3) {
           try {
             const fetchedAddresses = await fetchData(value);
             setAddresses(fetchedAddresses);
+            setSaisie(value);
           } catch (error) {
             console.error(error);
           }
         } else {
-          setAddresses([]);
+            setAddresses([]);
+            setSaisie(value);
         }
       }, []);
     
       const handleClickSelection = useCallback((add:string)=>{
         setAddresses([]);
-        setSaisie(add)
+        setSaisie(add);
+        fnUp(add);
       }, [])
     return (
         <div className='input'>
