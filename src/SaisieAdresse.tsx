@@ -1,5 +1,5 @@
 import { ChangeEvent, useCallback, useEffect, useState } from "react"
-import { useDebounce, useDebouncedCallback } from "use-debounce";
+import { useDebounce } from "use-debounce";
 
 interface SaisieAdresseProps {
     fnUp: (add:string) => void;
@@ -32,9 +32,16 @@ export default function SaisieAdresse({fnUp}: SaisieAdresseProps){
 
     useEffect(() => {
         const fetchAddresses = async () => {
-          if (debounceValue.length > 3) {
+          if (debounceValue.length > 3 ) {
             const fetchedAddresses = await fetchData(debounceValue);
-            setAddresses(fetchedAddresses);
+            if(fetchedAddresses[0] === debounceValue){
+                setAddresses([]);
+            }
+            else {
+                setAddresses(fetchedAddresses);
+            }
+          }else{
+            setAddresses([]);
           }
         };
       
