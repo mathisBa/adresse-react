@@ -1,12 +1,15 @@
-import { ChangeEvent, useCallback, useState } from "react"
+import { ChangeEvent, useCallback, useEffect, useState } from "react"
+import { useDebounce, useDebouncedCallback } from "use-debounce";
 
 interface SaisieAdresseProps {
     fnUp: (add:string) => void;
 }
 
 export default function SaisieAdresse({fnUp}: SaisieAdresseProps){
-    const [saisie, setSaisie] = useState('')
+    const [saisie, setSaisie] = useState('');
     const [addresses, setAddresses] = useState<string[]>([]);
+    const [debounceValue] = useDebounce(saisie, 500);
+
     async function fetchData(address:string) {
         try {
           const response = await fetch("https://api-adresse.data.gouv.fr/search/?q="+address);
@@ -25,23 +28,23 @@ export default function SaisieAdresse({fnUp}: SaisieAdresseProps){
           console.error('Error fetching data:', error);
           throw error;
         }
-      }  
+    }
+
+    useEffect(() => {
+        const fetchAddresses = async () => {
+          if (debounceValue.length > 3) {
+            const fetchedAddresses = await fetchData(debounceValue);
+            setAddresses(fetchedAddresses);
+          }
+        };
+      
+        fetchAddresses();
+      }, [debounceValue]);
 
       const handleSaisie = useCallback(async (event: ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         fnUp(value);
-        if (value.length > 3) {
-          try {
-            const fetchedAddresses = await fetchData(value);
-            setAddresses(fetchedAddresses);
-            setSaisie(value);
-          } catch (error) {
-            console.error(error);
-          }
-        } else {
-            setAddresses([]);
-            setSaisie(value);
-        }
+        setSaisie(value);
       }, []);
     
       const handleClickSelection = useCallback((add:string)=>{
